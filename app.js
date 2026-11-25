@@ -1,3 +1,21 @@
+// FIREBASE CONNECTION
+const firebaseConfig = {
+    apiKey: "AIzaSyAcsmFNYMRjfEtT5snprxwp1aFccEAOouE",
+    authDomain: "fan-card-verification.firebaseapp.com",
+    projectId: "fan-card-verification",
+    storageBucket: "fan-card-verification.firebasestorage.app",
+    messagingSenderId: "836921060622",
+    appId: "1:836921060622:web:ae484298277da204a37b5f"
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+const db = firebase.firestore();
+
+const VERIFICATION_URL = "https://verifyfancard.vercel.app/";
+
 
 /* CELEBRITY DATABASE */
 
