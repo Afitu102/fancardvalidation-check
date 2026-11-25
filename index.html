@@ -5,6 +5,20 @@
 <title>Official Fan Membership Card Builder</title><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script><!-- Firebase SDK --><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><link rel="stylesheet" href="style.css">
 </head><body><div class="container"><h1>FAN MEMBERSHIP CARD BUILDER</h1><p class="subtitle">
 Create your personalized celebrity fan membership card.
+</p><!-- ADMIN LOGIN --><div class="form"><div class="section-title">ADMINISTRATOR ACCESS</div><p id="adminStatus" style="font-size:12px;color:#e6c66b;margin-bottom:10px;">
+Not signed in. Administrator login required to register cards.
+</p><label>Administrator Email</label>
+<input type="email" id="adminEmail" placeholder="Enter administrator email">
+
+<label>Administrator Password</label>
+<input type="password" id="adminPassword" placeholder="Enter password">
+
+<button class="action" id="adminLoginBtn" onclick="adminLogin()">
+ADMIN LOGIN
+</button><button class="action secondary" id="adminLogoutBtn"
+onclick="adminLogout()" style="display:none;">
+LOG OUT
+</button>
 
 </div><div class="section-title">SELECT CELEBRITY</div><input class="search" id="search"
 placeholder="Search celebrity..."
@@ -161,9 +175,9 @@ DOWNLOAD BACK CARD
 </button>
 
 <p class="notice">
-This card is officially issued by this fan membership platform.
-It is not issued, approved, sponsored or endorsed by the celebrity
+This card is officially issued and authorised by management .
+It is issued, approved, sponsored or endorsed by the celebrity
 or their representatives. Celebrity names and photographs are used
-for identification purposes.
+for identification purposed
 </p></div></div><script src="app.js"></script></body>
 </html>
