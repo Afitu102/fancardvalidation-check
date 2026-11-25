@@ -1,25 +1,33 @@
+// ==========================================
 // FIREBASE CONNECTION
+// ==========================================
+
 const firebaseConfig = {
-    apiKey: "AIzaSyAcsmFNYMRjfEtT5snprxwp1aFccEAOouE",
-    authDomain: "fan-card-verification.firebaseapp.com",
-    projectId: "fan-card-verification",
-    storageBucket: "fan-card-verification.firebasestorage.app",
-    messagingSenderId: "836921060622",
-    appId: "1:836921060622:web:ae484298277da204a37b5f"
+apiKey: "AIzaSyAcsmFNYMRjfEtT5snprxwp1aFccEAOouE",
+authDomain: "fan-card-verification.firebaseapp.com",
+projectId: "fan-card-verification",
+storageBucket: "fan-card-verification.firebasestorage.app",
+messagingSenderId: "836921060622",
+appId: "1:836921060622:web:ae484298277da204a37b5f"
 };
 
 if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 }
 
 const db = firebase.firestore();
 
+const auth = firebase.auth();
+
 const VERIFICATION_URL = "https://verifyfancard.vercel.app/";
 
+const ADMIN_UID = "6hyO54YdDGTChMuo2fvpAFm0EIo1";
 
-/* CELEBRITY DATABASE */
+// ==========================================
+// CELEBRITY DATABASE
+// ==========================================
 
-const celebs=[
+const celebs = [
 
 {name:"Taylor Swift",category:"American"},
 {name:"Beyoncé",category:"American"},
@@ -65,22 +73,24 @@ const celebs=[
 
 ];
 
+// ==========================================
+// VARIABLES
+// ==========================================
 
-/* VARIABLES */
+let selected = 0;
+let category = "All";
+let fanID = "";
 
-let selected=0;
-let category="All";
-let fanID="";
-
-let currentTheme={
+let currentTheme = {
 main:"#172e59",
 accent:"#d4af37"
 };
 
-const celebrityImages={};
+const celebrityImages = {};
 
-
-/* FALLBACK IMAGE */
+// ==========================================
+// FALLBACK IMAGE
+// ==========================================
 
 function fallback(name){
 
@@ -90,15 +100,16 @@ encodeURIComponent(name)+
 
 }
 
-
-/* CATEGORY FILTER */
+// ==========================================
+// CATEGORY FILTER
+// ==========================================
 
 function setCategory(value,button){
 
-category=value;
+category = value;
 
 document.querySelectorAll(".filters button").forEach(b=>{
-b.classList.remove("active");
+    b.classList.remove("active");
 });
 
 button.classList.add("active");
@@ -107,174 +118,296 @@ renderCelebs();
 
 }
 
-
-/* CELEBRITY GRID */
+// ==========================================
+// CELEBRITY GRID
+// ==========================================
 
 function renderCelebs(){
 
-const grid=document.getElementById("celebGrid");
+const grid = document.getElementById("celebGrid");
 
-const search=document.getElementById("search").value.toLowerCase();
+const search = document.getElementById("search").value.toLowerCase();
 
-grid.innerHTML="";
+grid.innerHTML = "";
 
 celebs.forEach((c,index)=>{
 
-if(category!=="All" && c.category!==category)return;
+    if(category !== "All" && c.category !== category) return;
 
-if(!c.name.toLowerCase().includes(search))return;
+    if(!c.name.toLowerCase().includes(search)) return;
 
-const div=document.createElement("div");
+    const div = document.createElement("div");
 
-div.className="celeb"+(selected===index?" active":"");
+    div.className = "celeb"+(selected === index ? " active" : "");
 
-const img=document.createElement("img");
+    const img = document.createElement("img");
 
-img.src=celebrityImages[index]||fallback(c.name);
+    img.src = celebrityImages[index] || fallback(c.name);
 
-img.alt=c.name;
+    img.alt = c.name;
 
-img.onerror=()=>{
-img.onerror=null;
-img.src=fallback(c.name);
-};
+    img.onerror = ()=>{
+        img.onerror = null;
+        img.src = fallback(c.name);
+    };
 
-const name=document.createElement("b");
+    const name = document.createElement("b");
 
-name.textContent=c.name;
+    name.textContent = c.name;
 
-const small=document.createElement("small");
+    const small = document.createElement("small");
 
-small.textContent=c.category;
+    small.textContent = c.category;
 
-div.append(img,name,small);
+    div.append(img,name,small);
 
-div.onclick=()=>{
+    div.onclick = ()=>{
 
-selected=index;
-fanID="";
+        selected = index;
 
-generateID();
+        fanID = "";
 
-renderCelebs();
+        // Changing celebrity creates a new preview ID.
+        // It does not save until Generate New Fan ID is clicked.
 
-update();
+        generateID(false);
 
-};
+        renderCelebs();
 
-grid.appendChild(div);
+        update();
+
+    };
+
+    grid.appendChild(div);
 
 });
 
 }
 
-
-/* LOAD CELEBRITY PHOTOGRAPHS */
+// ==========================================
+// LOAD CELEBRITY PHOTOGRAPHS
+// ==========================================
 
 async function loadCelebrityImages(){
 
 for(let i=0;i<celebs.length;i++){
 
-try{
+    try{
 
-const url="https://en.wikipedia.org/api/rest_v1/page/summary/"+
-encodeURIComponent(celebs[i].name.replace(/ /g,"_"));
+        const url =
+            "https://en.wikipedia.org/api/rest_v1/page/summary/"+
+            encodeURIComponent(celebs[i].name.replace(/ /g,"_"));
 
-const response=await fetch(url);
+        const response = await fetch(url);
 
-if(!response.ok)continue;
+        if(!response.ok) continue;
 
-const data=await response.json();
+        const data = await response.json();
 
-if(data.thumbnail?.source){
+        if(data.thumbnail?.source){
 
-celebrityImages[i]=data.thumbnail.source;
+            celebrityImages[i] = data.thumbnail.source;
 
-renderCelebs();
+            renderCelebs();
 
-if(selected===i){
-update();
+            if(selected === i){
+                update();
+            }
+
+        }
+
+    }catch(error){
+
+        console.log("Could not load:",celebs[i].name);
+
+    }
+
 }
 
 }
 
-}catch(error){
-
-console.log("Could not load:",celebs[i].name);
-
-}
-
-}
-
-}
-
-
-/* THEME SELECTION */
+// ==========================================
+// THEME SELECTION
+// ==========================================
 
 function setTheme(main,accent,element){
 
-currentTheme.main=main;
-currentTheme.accent=accent;
+currentTheme.main = main;
+
+currentTheme.accent = accent;
 
 document.querySelectorAll(".theme-option").forEach(el=>{
-el.classList.remove("active");
+    el.classList.remove("active");
 });
 
-if(element)element.classList.add("active");
+if(element) element.classList.add("active");
 
-document.getElementById("customColor").value=main;
+document.getElementById("customColor").value = main;
 
 update();
 
 }
-
 
 function setCustomTheme(color){
 
-currentTheme.main=color;
-currentTheme.accent="#d4af37";
+currentTheme.main = color;
+
+currentTheme.accent = "#d4af37";
 
 document.querySelectorAll(".theme-option").forEach(el=>{
-el.classList.remove("active");
+    el.classList.remove("active");
 });
 
 update();
 
 }
 
+// ==========================================
+// GENERATE FAN ID
+// ==========================================
 
-/* GENERATE FAN ID */
+function generateID(saveCard = true){
 
-function generateID(){
+const prefix = celebs[selected].name
+    .replace(/[^a-zA-Z]/g,"")
+    .substring(0,3).toUpperCase();
 
-const prefix=celebs[selected].name
-.replace(/[^a-zA-Z]/g,"")
-.substring(0,3).toUpperCase();
-
-fanID=prefix+"-"+new Date().getFullYear()+"-"+
-Math.floor(100000+Math.random()*900000);
+fanID = prefix+"-"+new Date().getFullYear()+"-"+
+    Math.floor(100000+Math.random()*900000);
 
 update();
 
+// Only save when the user deliberately generates a new ID.
+if(saveCard){
+    saveCurrentFanCard();
 }
 
+}
 
-/* UPDATE CARD */
+// ==========================================
+// SAVE FAN CARD TO FIRESTORE
+// ==========================================
+
+async function saveCurrentFanCard(){
+
+if(!fanID){
+    alert("Please generate a Fan ID first.");
+    return;
+}
+
+if(!auth.currentUser || auth.currentUser.uid !== ADMIN_UID){
+
+    alert(
+        "Your authorised Firebase account is not signed in. "+
+        "Please sign in to the authorised account before saving fan cards."
+    );
+
+    return;
+
+}
+
+const fanName =
+    document.getElementById("fanName").value.trim();
+
+if(!fanName){
+
+    alert("Please enter the fan's full name before generating the Fan ID.");
+
+    return;
+
+}
+
+const fanPhotoElement = document.getElementById("fanPhoto");
+
+const fanPhotoSource = fanPhotoElement.src;
+
+const fanPhoto = fanPhotoSource &&
+    fanPhotoSource.startsWith("http")
+    ? fanPhotoSource
+    : null;
+
+const cardData = {
+
+    fanId: fanID,
+
+    fanName: fanName,
+
+    gender: document.getElementById("sex").value,
+
+    membershipType: document.getElementById("cardType").value,
+
+    fanCountry: document.getElementById("country").value,
+
+    celebrityName: celebs[selected].name,
+
+    celebrityCategory: celebs[selected].category,
+
+    celebrityPhoto: celebrityImages[selected] || fallback(celebs[selected].name),
+
+    status: "ACTIVE",
+
+    verificationUrl:
+        VERIFICATION_URL+"?id="+encodeURIComponent(fanID),
+
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+
+};
+
+try{
+
+    const cardRef = db.collection("fanCards").doc(fanID);
+
+    const existingCard = await cardRef.get();
+
+    if(existingCard.exists){
+
+        alert("This Fan ID already exists. Please generate another ID.");
+
+        return;
+
+    }
+
+    await cardRef.set(cardData);
+
+    alert(
+        "FAN CARD REGISTERED SUCCESSFULLY!\n\n"+
+        "Fan ID: "+fanID+"\n\n"+
+        "Verification link:\n"+
+        VERIFICATION_URL+"?id="+encodeURIComponent(fanID)
+    );
+
+}catch(error){
+
+    console.error("Firestore saving error:",error);
+
+    alert(
+        "Could not save this fan card.\n\n"+
+        "Please check your Firebase authentication and internet connection."
+    );
+
+}
+
+}
+
+// ==========================================
+// UPDATE CARD
+// ==========================================
 
 function update(){
 
-const c=celebs[selected];
+const c = celebs[selected];
 
-const name=document.getElementById("fanName").value.trim()||"FAN NAME";
+const name =
+    document.getElementById("fanName").value.trim() || "FAN NAME";
 
-const type=document.getElementById("cardType").value;
+const type = document.getElementById("cardType").value;
 
-const disclaimer=document.getElementById("disclaimer").value;
+const disclaimer = document.getElementById("disclaimer").value;
 
-const year=new Date().getFullYear();
+const year = new Date().getFullYear();
 
 
-/* THEMES */
+// THEMES
 
 document.getElementById("frontCard").style.setProperty("--main",currentTheme.main);
 
@@ -285,259 +418,280 @@ document.getElementById("backCard").style.setProperty("--main",currentTheme.main
 document.getElementById("backCard").style.setProperty("--accent",currentTheme.accent);
 
 
-/* HEADER */
+// HEADER
 
-document.getElementById("headerName").textContent=
-c.name+" Membership Card";
-
-
-/* CELEBRITY PHOTO */
-
-document.getElementById("celebLargePhoto").src=
-celebrityImages[selected]||fallback(c.name);
-
-document.getElementById("celebPhotoName").textContent=c.name;
+document.getElementById("headerName").textContent =
+    c.name+" Membership Card";
 
 
-/* FAN INFORMATION */
+// CELEBRITY PHOTO
 
-document.getElementById("pName").textContent=name.toUpperCase();
+document.getElementById("celebLargePhoto").src =
+    celebrityImages[selected] || fallback(c.name);
 
-document.getElementById("pSex").textContent=
-document.getElementById("sex").value;
-
-document.getElementById("pType").textContent=type;
-
-document.getElementById("pCountry").textContent=
-document.getElementById("country").value;
-
-document.getElementById("pYear").textContent=year;
-
-document.getElementById("pFav").textContent=
-document.getElementById("fav").value;
+document.getElementById("celebPhotoName").textContent = c.name;
 
 
-/* SIGNATURE */
+// FAN INFORMATION
 
-const parts=name.split(" ");
+document.getElementById("pName").textContent = name.toUpperCase();
 
-document.getElementById("pSig").textContent=
-parts[0].charAt(0)+". "+(parts.slice(1).join(" ")||"");
+document.getElementById("pSex").textContent =
+    document.getElementById("sex").value;
+
+document.getElementById("pType").textContent = type;
+
+document.getElementById("pCountry").textContent =
+    document.getElementById("country").value;
+
+document.getElementById("pYear").textContent = year;
+
+document.getElementById("pFav").textContent =
+    document.getElementById("fav").value;
 
 
-/* FAN ID */
+// SIGNATURE
 
-document.getElementById("pId").textContent=fanID;
+const parts = name.split(" ");
 
-document.getElementById("barcodeNum").textContent=fanID;
+document.getElementById("pSig").textContent =
+    parts[0].charAt(0)+". "+(parts.slice(1).join(" ")||"");
 
-document.getElementById("backId").textContent=fanID;
+
+// FAN ID
+
+document.getElementById("pId").textContent = fanID;
+
+document.getElementById("barcodeNum").textContent = fanID;
+
+document.getElementById("backId").textContent = fanID;
 
 
-/* BARCODE */
+// BARCODE
 
 try{
 
-JsBarcode("#barcode",fanID,{
-format:"CODE128",
-displayValue:false,
-height:35,
-margin:0,
-width:1.5
-});
+    JsBarcode("#barcode",fanID,{
+        format:"CODE128",
+        displayValue:false,
+        height:35,
+        margin:0,
+        width:1.5
+    });
 
 }catch(error){}
 
 
-/* QR CODE */
+// QR CODE - SEPARATE VERIFICATION WEBSITE
 
-const qrData=JSON.stringify({
-type:"Unofficial fan-made collectible",
-celebrity:c.name,
-fan:name,
-fanID:fanID,
-cardType:type
-});
+const verificationLink =
+    VERIFICATION_URL+"?id="+encodeURIComponent(fanID);
 
-const qr="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data="+
-encodeURIComponent(qrData);
+const qr =
+    "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data="+
+    encodeURIComponent(verificationLink);
 
-document.getElementById("qrImg").src=qr;
+document.getElementById("qrImg").src = qr;
 
-document.getElementById("qrBack").src=qr;
+document.getElementById("qrBack").src = qr;
 
 
-/* BENEFITS */
+// BENEFITS
 
-const benefits=document.getElementById("backBenefits").value
-.split("\n")
-.filter(x=>x.trim());
+const benefits =
+    document.getElementById("backBenefits").value
+    .split("\n")
+    .filter(x=>x.trim());
 
-const list=document.getElementById("backBenefitsList");
+const list = document.getElementById("backBenefitsList");
 
-list.innerHTML="";
+list.innerHTML = "";
 
 benefits.forEach(b=>{
 
-const li=document.createElement("li");
+    const li = document.createElement("li");
 
-li.textContent=b;
+    li.textContent = b;
 
-list.appendChild(li);
+    list.appendChild(li);
 
 });
 
 
-/* BACK INFORMATION */
+// BACK INFORMATION
 
-document.getElementById("backTermsText").textContent=
-document.getElementById("backTerms").value;
+document.getElementById("backTermsText").textContent =
+    document.getElementById("backTerms").value;
 
-document.getElementById("backValidText").textContent=
-document.getElementById("backValid").value;
+document.getElementById("backValidText").textContent =
+    document.getElementById("backValid").value;
 
-document.getElementById("backContactText").textContent=
-document.getElementById("backContact").value;
-
-
-/* DISCLAIMER ON BOTH SIDES */
-
-document.getElementById("frontDisclaimer").textContent=disclaimer;
-
-document.getElementById("backDisclaimer").textContent=disclaimer;
+document.getElementById("backContactText").textContent =
+    document.getElementById("backContact").value;
 
 
-/* ADAPT BACK TEXT TO AVAILABLE SPACE */
+// DISCLAIMER
+
+document.getElementById("frontDisclaimer").textContent = disclaimer;
+
+document.getElementById("backDisclaimer").textContent = disclaimer;
+
+
+// FIT BACK TEXT
 
 fitBackContent();
 
 }
 
-
-/* AUTOMATIC BACK-CARD TEXT FITTING */
+// ==========================================
+// AUTOMATIC BACK-CARD TEXT FITTING
+// ==========================================
 
 function fitBackContent(){
 
-const content=document.querySelector(".back-content");
+const content = document.querySelector(".back-content");
 
-let fontSize=1.8;
-
-content.querySelectorAll("li,p").forEach(el=>{
-el.style.fontSize=fontSize+"cqw";
-});
-
-let attempts=0;
-
-while(content.scrollHeight>content.clientHeight && fontSize>1.1 && attempts<15){
-
-fontSize-=0.1;
+let fontSize = 1.8;
 
 content.querySelectorAll("li,p").forEach(el=>{
-el.style.fontSize=fontSize+"cqw";
+    el.style.fontSize = fontSize+"cqw";
 });
 
-attempts++;
+let attempts = 0;
+
+while(
+    content.scrollHeight > content.clientHeight &&
+    fontSize > 1.1 &&
+    attempts < 15
+){
+
+    fontSize -= 0.1;
+
+    content.querySelectorAll("li,p").forEach(el=>{
+        el.style.fontSize = fontSize+"cqw";
+    });
+
+    attempts++;
 
 }
 
 }
 
-
-/* UPLOAD FAN PHOTO */
+// ==========================================
+// UPLOAD FAN PHOTO
+// ==========================================
 
 function loadPhoto(event){
 
-const file=event.target.files[0];
+const file = event.target.files[0];
 
-if(!file)return;
+if(!file) return;
 
 if(!file.type.startsWith("image/")){
-alert("Please select an image.");
-return;
+
+    alert("Please select an image.");
+
+    return;
+
 }
 
-if(file.size>5*1024*1024){
-alert("Image must be smaller than 5MB.");
-return;
+if(file.size > 5*1024*1024){
+
+    alert("Image must be smaller than 5MB.");
+
+    return;
+
 }
 
-const reader=new FileReader();
+const reader = new FileReader();
 
-reader.onload=()=>{
-document.getElementById("fanPhoto").src=reader.result;
+reader.onload = ()=>{
+
+    document.getElementById("fanPhoto").src = reader.result;
+
 };
 
 reader.readAsDataURL(file);
 
 }
 
-
-/* DOWNLOAD CARD */
+// ==========================================
+// DOWNLOAD CARD
+// ==========================================
 
 async function downloadCard(id,filename){
 
-const element=document.getElementById(id);
+const element = document.getElementById(id);
 
-const buttons=document.querySelectorAll("button.action");
+const buttons = document.querySelectorAll("button.action");
 
-buttons.forEach(b=>b.disabled=true);
+buttons.forEach(b=>b.disabled = true);
 
 try{
 
-await document.fonts.ready;
+    await document.fonts.ready;
 
-const images=Array.from(element.querySelectorAll("img"));
+    const images = Array.from(element.querySelectorAll("img"));
 
-await Promise.all(images.map(img=>{
+    await Promise.all(images.map(img=>{
 
-if(img.complete)return Promise.resolve();
+        if(img.complete) return Promise.resolve();
 
-return new Promise(resolve=>{
+        return new Promise(resolve=>{
 
-img.onload=resolve;
-img.onerror=resolve;
+            img.onload = resolve;
 
-});
+            img.onerror = resolve;
 
-}));
+        });
 
-const canvas=await html2canvas(element,{
+    }));
 
-scale:4,
-useCORS:true,
-allowTaint:false,
-backgroundColor:null,
-logging:false
+    const canvas = await html2canvas(element,{
 
-});
+        scale:4,
 
-const link=document.createElement("a");
+        useCORS:true,
 
-link.download=filename;
+        allowTaint:false,
 
-link.href=canvas.toDataURL("image/png");
+        backgroundColor:null,
 
-link.click();
+        logging:false
+
+    });
+
+    const link = document.createElement("a");
+
+    link.download = filename;
+
+    link.href = canvas.toDataURL("image/png");
+
+    link.click();
 
 }catch(error){
 
-console.error(error);
+    console.error(error);
 
-alert("Download failed. Please check your internet connection and try again.");
+    alert("Download failed. Please check your internet connection and try again.");
 
 }finally{
 
-buttons.forEach(b=>b.disabled=false);
+    buttons.forEach(b=>b.disabled = false);
 
 }
 
 }
 
-
-/* INITIALIZE */
+// ==========================================
+// INITIALIZE
+// ==========================================
 
 renderCelebs();
 
-generateID();
+// Initial ID is for preview only.
+// It does not automatically register a fan.
+
+generateID(false);
 
 loadCelebrityImages();
