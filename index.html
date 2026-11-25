@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Premium Fan Card Builder</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>FAN MEMBERSHIP CARD BUILDER</h1>
+
+<p class="subtitle">
+Create your personalized celebrity fan collectible card.
+</p>
+
+<div class="section-title">SELECT CELEBRITY</div>
+
+<input class="search" id="search"
+placeholder="Search celebrity..."
+oninput="renderCelebs()">
+
+<div class="filters">
+<button class="active" onclick="setCategory('All',this)">All</button>
+<button onclick="setCategory('American',this)">American</button>
+<button onclick="setCategory('British',this)">British</button>
+<button onclick="setCategory('International',this)">International</button>
+</div>
+
+<div class="grid" id="celebGrid"></div>
+
+
+<!-- COLOUR SELECTION -->
+
+<div class="form">
+
+<div class="section-title">CHOOSE CARD COLOUR</div>
+
+<div class="theme-grid">
+
+<div class="theme-option active"
+onclick="setTheme('#172e59','#d4af37',this)">
+<div class="theme-color" style="background:#172e59"></div>
+<small>Navy Gold</small>
+</div>
+
+<div class="theme-option"
+onclick="setTheme('#111111','#d4af37',this)">
+<div class="theme-color" style="background:#111"></div>
+<small>Black Gold</small>
+</div>
+
+<div class="theme-option"
+onclick="setTheme('#541b70','#e6b8ff',this)">
+<div class="theme-color" style="background:#541b70"></div>
+<small>Purple</small>
+</div>
+
+<div class="theme-option"
+onclick="setTheme('#075c3c','#d4af37',this)">
+<div class="theme-color" style="background:#075c3c"></div>
+<small>Emerald</small>
+</div>
+
+<div class="theme-option"
+onclick="setTheme('#791e2b','#f1c40f',this)">
+<div class="theme-color" style="background:#791e2b"></div>
+<small>Burgundy</small>
+</div>
+
+<div class="theme-option"
+onclick="setTheme('#164e82','#c0e6ff',this)">
+<div class="theme-color" style="background:#164e82"></div>
+<small>Blue</small>
+</div>
+
+<div class="theme-option"
+onclick="setTheme('#704214','#f5d6a0',this)">
+<div class="theme-color" style="background:#704214"></div>
+<small>Chocolate</small>
+</div>
+
+<div class="theme-option"
+onclick="setTheme('#777777','#ffffff',this)">
+<div class="theme-color" style="background:#777"></div>
+<small>Silver</small>
+</div>
+
+<div class="theme-option"
+onclick="setTheme('#a32663','#ffd1e8',this)">
+<div class="theme-color" style="background:#a32663"></div>
+<small>Rose Pink</small>
+</div>
+
+</div>
+
+<label>Custom Colour</label>
+
+<div class="custom-color">
+<input type="color" id="customColor"
+value="#172e59"
+oninput="setCustomTheme(this.value)">
+<span style="font-size:11px;color:#bbb">
+Choose your own card colour.
+</span>
+</div>
+
+</div>
+
+
+<!-- EDIT FRONT AND BACK -->
+
+<div class="form">
+
+<div class="section-title">EDIT FRONT CARD</div>
+
+<label>Fan Name</label>
+<input id="fanName" value="Sarah James" oninput="update()">
+
+<div class="row">
+
+<div>
+<label>Sex</label>
+<select id="sex" onchange="update()">
+<option>Female</option>
+<option>Male</option>
+<option>Other</option>
+</select>
+</div>
+
+<div>
+<label>Card Type</label>
+<select id="cardType" onchange="update()">
+<option>Regular</option>
+<option>VIP</option>
+</select>
+</div>
+
+</div>
+
+<label>Country</label>
+<input id="country" value="USA" oninput="update()">
+
+<label>Favorite</label>
+<input id="fav" value="Favorite Celebrity" oninput="update()">
+
+<label>Upload Fan Photograph</label>
+<input type="file" accept="image/*" onchange="loadPhoto(event)">
+
+<button class="action secondary" onclick="generateID()">
+GENERATE NEW FAN ID
+</button>
+
+
+<div class="section-title">EDIT BACK CARD</div>
+
+<label>Membership Benefits (one per line)</label>
+
+<textarea id="backBenefits" oninput="update()">Early access to exclusive content
+VIP members receive priority access
+Special fan community privileges
+Exclusive membership updates</textarea>
+
+<label>Terms and Conditions</label>
+
+<textarea id="backTerms" oninput="update()">This is an official fan-made collectible. It does grant access to celebrity's private events or official membership programs.</textarea>
+
+<label>Validity</label>
+
+<input id="backValid"
+value="Member Since 2026 - Active"
+oninput="update()">
+
+<label>Contact / Team Note</label>
+
+<input id="backContact"
+value="Contact the fan community for information"
+oninput="update()">
+
+<div class="section-title">EDIT FAN CARD DISCLAIMER</div>
+
+<label>Disclaimer Text (appears on BOTH sides)</label>
+
+<textarea id="disclaimer" oninput="update()">OFFICIAL FAN-MADE COLLECTIBLE</textarea>
+
+</div>
+
+
+<!-- CARD PREVIEWS -->
+
+<div class="card-wrap">
+
+<div class="section-title">FRONT CARD PREVIEW</div>
+
+<div class="card front-card" id="frontCard">
+
+<div class="card-header">
+
+<div class="header-name" id="headerName">
+Celebrity Membership Card
+</div>
+
+<div class="header-subtitle">
+PREMIUM FAN COLLECTIBLE
+</div>
+
+</div>
+
+<div class="front-main">
+
+<div class="fan-photo">
+<img id="fanPhoto"
+src="https://i.pravatar.cc/400?img=47"
+alt="Fan photograph">
+</div>
+
+<div class="details">
+
+<p><b>FAN NAME:</b> <span id="pName"></span></p>
+<p><b>FAN ID:</b> <span id="pId"></span></p>
+<p><b>SEX:</b> <span id="pSex"></span></p>
+<p><b>CARD TYPE:</b> <span id="pType"></span></p>
+<p><b>COUNTRY:</b> <span id="pCountry"></span></p>
+<p><b>MEMBER SINCE:</b> <span id="pYear"></span></p>
+<p><b>FAVORITE:</b> <span id="pFav"></span></p>
+
+</div>
+
+<div class="celeb-photo">
+<img id="celebLargePhoto"
+src="https://ui-avatars.com/api/?name=Celebrity"
+alt="Selected celebrity">
+
+<small id="celebPhotoName">Celebrity</small>
+</div>
+
+</div>
+
+<div class="card-bottom">
+
+<div class="sig-box">
+<div class="sig-label">Signature</div>
+<div class="sig" id="pSig">S. James</div>
+</div>
+
+<div class="barcode-box">
+<svg id="barcode"></svg>
+<div class="barcode-num" id="barcodeNum"></div>
+</div>
+
+<div class="qr-box">
+<img id="qrImg" src="" alt="QR code">
+<small>SCAN CARD</small>
+</div>
+
+</div>
+
+<div class="front-disclaimer" id="frontDisclaimer">
+OFFICIAL FAN-MADE COLLECTIBLE
+</div>
+
+</div>
+
+
+<div class="section-title">BACK CARD PREVIEW</div>
+
+<div class="card back-card" id="backCard">
+
+<div class="mag-strip"></div>
+
+<div class="back-content">
+
+<h3>MEMBER BENEFITS</h3>
+
+<ul id="backBenefitsList"></ul>
+
+<p><b>TERMS:</b> <span id="backTermsText"></span></p>
+
+<p><b>VALID:</b> <span id="backValidText"></span></p>
+
+<p><b>CONTACT:</b> <span id="backContactText"></span></p>
+
+<div class="back-qr">
+
+<img id="qrBack" src="" alt="QR code">
+
+<div>
+<b>Fan Card Information</b>
+<br>
+<small>official fan-made collectible.</small>
+<br>
+<small id="backId"></small>
+</div>
+
+</div>
+
+<div class="back-disclaimer" id="backDisclaimer">
+OFFICIAL FAN-MADE COLLECTIBLE
+</div>
+
+</div>
+
+</div>
+
+
+<button class="action"
+onclick="downloadCard('frontCard','fan-front.png')">
+DOWNLOAD FRONT CARD
+</button>
+
+<button class="action secondary"
+onclick="downloadCard('backCard','fan-back.png')">
+DOWNLOAD BACK CARD
+</button>
+
+<p class="notice">
+This is an official fan-made collectible. It is issued,
+approved and endorsed by the celebrity and their representatives.
+Celebrity photographs are displayed for identification of the
+public figure and may not be available for every one unless authorised.
+</p>
+
+</div>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
