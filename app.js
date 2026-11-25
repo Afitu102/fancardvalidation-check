@@ -16,12 +16,113 @@ firebase.initializeApp(firebaseConfig);
 }
 
 const db = firebase.firestore();
-
 const auth = firebase.auth();
 
 const VERIFICATION_URL = "https://verifyfancard.vercel.app/";
-
 const ADMIN_UID = "6hyO54YdDGTChMuo2fvpAFm0EIo1";
+
+// ==========================================
+// ADMIN FIREBASE AUTHENTICATION
+// ==========================================
+
+async function adminLogin(){
+
+const emailInput = document.getElementById("adminEmail");
+const passwordInput = document.getElementById("adminPassword");
+
+const email = emailInput
+    ? emailInput.value.trim()
+    : prompt("Enter your administrator email:");
+
+const password = passwordInput
+    ? passwordInput.value
+    : prompt("Enter your administrator password:");
+
+if(!email || !password){
+
+    alert("Please enter your administrator email and password.");
+
+    return;
+
+}
+
+try{
+
+    const result = await auth.signInWithEmailAndPassword(email,password);
+
+    if(result.user.uid !== ADMIN_UID){
+
+        await auth.signOut();
+
+        alert("Access denied. This is not the authorised administrator account.");
+
+        return;
+
+    }
+
+    alert("Administrator successfully signed in!");
+
+    const status = document.getElementById("adminStatus");
+
+    if(status){
+        status.textContent = "Administrator signed in successfully.";
+    }
+
+}catch(error){
+
+    console.error("Firebase login error:",error);
+
+    alert("Login failed: "+error.message);
+
+}
+
+}
+
+// ADMIN LOGOUT
+
+async function adminLogout(){
+
+try{
+
+    await auth.signOut();
+
+    alert("Administrator signed out.");
+
+}catch(error){
+
+    console.error(error);
+
+    alert("Could not sign out. Please try again.");
+
+}
+
+}
+
+// CHECK AUTHENTICATION STATUS
+
+auth.onAuthStateChanged(user=>{
+
+const status = document.getElementById("adminStatus");
+
+if(user && user.uid === ADMIN_UID){
+
+    console.log("Authorised administrator is signed in.");
+
+    if(status){
+        status.textContent = "Administrator is signed in.";
+    }
+
+}else{
+
+    console.log("Administrator is not signed in.");
+
+    if(status){
+        status.textContent = "Administrator is not signed in.";
+    }
+
+}
+
+});
 
 // ==========================================
 // CELEBRITY DATABASE
@@ -167,9 +268,6 @@ celebs.forEach((c,index)=>{
 
         fanID = "";
 
-        // Changing celebrity creates a new preview ID.
-        // It does not save until Generate New Fan ID is clicked.
-
         generateID(false);
 
         renderCelebs();
@@ -277,7 +375,6 @@ fanID = prefix+"-"+new Date().getFullYear()+"-"+
 
 update();
 
-// Only save when the user deliberately generates a new ID.
 if(saveCard){
     saveCurrentFanCard();
 }
@@ -291,15 +388,18 @@ if(saveCard){
 async function saveCurrentFanCard(){
 
 if(!fanID){
+
     alert("Please generate a Fan ID first.");
+
     return;
+
 }
 
 if(!auth.currentUser || auth.currentUser.uid !== ADMIN_UID){
 
     alert(
         "Your authorised Firebase account is not signed in. "+
-        "Please sign in to the authorised account before saving fan cards."
+        "Please sign in to the authorised account before saving cards."
     );
 
     return;
@@ -316,15 +416,6 @@ if(!fanName){
     return;
 
 }
-
-const fanPhotoElement = document.getElementById("fanPhoto");
-
-const fanPhotoSource = fanPhotoElement.src;
-
-const fanPhoto = fanPhotoSource &&
-    fanPhotoSource.startsWith("http")
-    ? fanPhotoSource
-    : null;
 
 const cardData = {
 
@@ -382,7 +473,7 @@ try{
 
     alert(
         "Could not save this fan card.\n\n"+
-        "Please check your Firebase authentication and internet connection."
+        "Error: "+error.message
     );
 
 }
@@ -689,8 +780,8 @@ try{
 
 renderCelebs();
 
-// Initial ID is for preview only.
-// It does not automatically register a fan.
+// Initial ID is only for card preview.
+// It does not register a fan.
 
 generateID(false);
 
