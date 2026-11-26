@@ -210,58 +210,154 @@ return "https://ui-avatars.com/api/?name=" +
 }
 
 // ==========================================
-// TELEGRAM USERNAME VALIDATION
+// CONTACT PLATFORM VALIDATION
 // ==========================================
 
-function getTelegramDetails() {
+function getContactDetails() {
 
-const input = document.getElementById("telegramUsername");
+const platformInput = document.getElementById("contactPlatform");
 
-if (!input) {
-    alert("Telegram username field is missing.");
-    return null;
-}
+if (!platformInput) {
 
-let username = input.value.trim();
-
-username = username.replace(/^@/, "");
-
-// Telegram usernames:
-// 5 to 32 characters
-// Letters, numbers and underscores
-// Must start with a letter
-
-const telegramPattern = /^[a-zA-Z][a-zA-Z0-9_]{4,31}$/;
-
-if (!username) {
-
-    alert("Telegram username is compulsory. Please enter it.");
-
-    input.focus();
+    alert("Contact platform selection is missing.");
 
     return null;
 
 }
 
-if (!telegramPattern.test(username)) {
+const platform = platformInput.value;
 
-    alert(
-        "Invalid Telegram username.\n\n" +
-        "Enter a valid username containing 5–32 characters.\n" +
-        "Use letters, numbers or underscores.\n\n" +
-        "Example: @TaylorManagement"
-    );
+// ======================================
+// TELEGRAM
+// ======================================
 
-    input.focus();
+if (platform === "telegram") {
 
-    return null;
+    const input = document.getElementById("telegramUsername");
+
+    if (!input) {
+
+        alert("Telegram username field is missing.");
+
+        return null;
+
+    }
+
+    let username = input.value.trim();
+
+    username = username.replace(/^@/, "");
+
+    const telegramPattern = /^[a-zA-Z][a-zA-Z0-9_]{4,31}$/;
+
+    if (!username) {
+
+        alert("Telegram username is compulsory. Please enter it.");
+
+        input.focus();
+
+        return null;
+
+    }
+
+    if (!telegramPattern.test(username)) {
+
+        alert(
+            "Invalid Telegram username.\n\n" +
+            "Enter a valid username containing 5–32 characters.\n" +
+            "Use letters, numbers or underscores.\n\n" +
+            "Example: @TaylorManagement"
+        );
+
+        input.focus();
+
+        return null;
+
+    }
+
+    return {
+
+        contactPlatform: "telegram",
+
+        telegramUsername: username,
+
+        telegramUrl: "https://t.me/" + username,
+
+        whatsappNumber: null,
+
+        whatsappUrl: null
+
+    };
 
 }
 
-return {
-    username: username,
-    telegramUrl: "https://t.me/" + username
-};
+// ======================================
+// WHATSAPP
+// ======================================
+
+if (platform === "whatsapp") {
+
+    const input = document.getElementById("whatsappNumber");
+
+    if (!input) {
+
+        alert("WhatsApp phone number field is missing.");
+
+        return null;
+
+    }
+
+    // Remove spaces, plus signs, brackets and hyphens.
+
+    const number = input.value.replace(/\D/g, "");
+
+    // International phone number: 8 to 15 digits.
+
+    const whatsappPattern = /^[0-9]{8,15}$/;
+
+    if (!number) {
+
+        alert("WhatsApp phone number is compulsory. Please enter it.");
+
+        input.focus();
+
+        return null;
+
+    }
+
+    if (!whatsappPattern.test(number)) {
+
+        alert(
+            "Invalid WhatsApp number.\n\n" +
+            "Enter a valid international phone number with its country code.\n\n" +
+            "Example: 2348012345678\n\n" +
+            "Do not include the + sign."
+        );
+
+        input.focus();
+
+        return null;
+
+    }
+
+    return {
+
+        contactPlatform: "whatsapp",
+
+        telegramUsername: null,
+
+        telegramUrl: null,
+
+        whatsappNumber: number,
+
+        whatsappUrl: "https://wa.me/" + number
+
+    };
+
+}
+
+alert("Please select a valid contact platform.");
+
+return null;
 
 }
 
@@ -493,11 +589,15 @@ if (!fanName) {
 
 }
 
-// VALIDATE TELEGRAM USERNAME
+// GET SELECTED CONTACT PLATFORM AND VALIDATE ITS DETAILS.
 
-const telegram = getTelegramDetails();
+const contact = getContactDetails();
 
-if (!telegram) return;
+if (!contact) return;
+
+// ======================================
+// FAN CARD DATA
+// ======================================
 
 const cardData = {
 
@@ -520,11 +620,21 @@ const cardData = {
     celebrityPhoto:
         celebrityImages[selected] || fallback(celebs[selected].name),
 
+    // SELECTED CONTACT PLATFORM
+
+    contactPlatform: contact.contactPlatform,
+
     // TELEGRAM DETAILS
 
-    telegramUsername: telegram.username,
+    telegramUsername: contact.telegramUsername,
 
-    telegramUrl: telegram.telegramUrl,
+    telegramUrl: contact.telegramUrl,
+
+    // WHATSAPP DETAILS
+
+    whatsappNumber: contact.whatsappNumber,
+
+    whatsappUrl: contact.whatsappUrl,
 
     status: "ACTIVE",
 
@@ -551,10 +661,15 @@ try {
 
     await cardRef.set(cardData);
 
+    const contactMessage = contact.contactPlatform === "telegram"
+        ? "Telegram username: @" + contact.telegramUsername
+        : "WhatsApp number: " + contact.whatsappNumber;
+
     alert(
         "FAN CARD REGISTERED SUCCESSFULLY!\n\n" +
         "Fan ID: " + fanID + "\n\n" +
-        "Telegram username: @" + telegram.username + "\n\n" +
+        "Selected platform: " + contact.contactPlatform.toUpperCase() + "\n\n" +
+        contactMessage + "\n\n" +
         "Verification link:\n" +
         VERIFICATION_URL + "?id=" + encodeURIComponent(fanID)
     );
@@ -599,7 +714,6 @@ const disclaimer = document.getElementById("disclaimer").value;
 
 const year = new Date().getFullYear();
 
-
 // CARD THEMES
 
 document.getElementById("frontCard").style.setProperty(
@@ -622,12 +736,10 @@ document.getElementById("backCard").style.setProperty(
     currentTheme.accent
 );
 
-
 // HEADER
 
 document.getElementById("headerName").textContent =
     c.name + " Membership Card";
-
 
 // CELEBRITY PHOTO
 
@@ -635,7 +747,6 @@ document.getElementById("celebLargePhoto").src =
     celebrityImages[selected] || fallback(c.name);
 
 document.getElementById("celebPhotoName").textContent = c.name;
-
 
 // FAN INFORMATION
 
@@ -654,14 +765,12 @@ document.getElementById("pYear").textContent = year;
 document.getElementById("pFav").textContent =
     document.getElementById("fav").value;
 
-
 // SIGNATURE
 
 const parts = name.split(" ");
 
 document.getElementById("pSig").textContent =
     parts[0].charAt(0) + ". " + (parts.slice(1).join(" ") || "");
-
 
 // FAN ID
 
@@ -670,7 +779,6 @@ document.getElementById("pId").textContent = fanID;
 document.getElementById("barcodeNum").textContent = fanID;
 
 document.getElementById("backId").textContent = fanID;
-
 
 // BARCODE
 
@@ -686,7 +794,6 @@ try {
 
 } catch (error) {}
 
-
 // QR CODE
 
 const verificationLink =
@@ -699,7 +806,6 @@ const qr =
 document.getElementById("qrImg").src = qr;
 
 document.getElementById("qrBack").src = qr;
-
 
 // BENEFITS
 
@@ -722,7 +828,6 @@ benefits.forEach(b => {
 
 });
 
-
 // BACK INFORMATION
 
 document.getElementById("backTermsText").textContent =
@@ -734,13 +839,11 @@ document.getElementById("backValidText").textContent =
 document.getElementById("backContactText").textContent =
     document.getElementById("backContact").value;
 
-
 // DISCLAIMER
 
 document.getElementById("frontDisclaimer").textContent = disclaimer;
 
 document.getElementById("backDisclaimer").textContent = disclaimer;
-
 
 // FIT BACK TEXT
 
