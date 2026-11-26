@@ -1,4 +1,16 @@
 // ==========================================
+// CLOUDINARY PHOTO HOSTING
+// ==========================================
+
+const CLOUDINARY_CLOUD_NAME = "j4bidsvs";
+const CLOUDINARY_UPLOAD_PRESET = "masgjboi";
+
+let uploadedFanPhotoURL = "";
+let photoUploading = false;
+
+
+
+// ==========================================
 // FIREBASE CONNECTION
 // ==========================================
 
