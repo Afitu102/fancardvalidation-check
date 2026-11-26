@@ -681,40 +681,82 @@ while(
 }
 
 // ==========================================
-// UPLOAD FAN PHOTO
+// UPLOAD FAN PHOTO TO CLOUDINARY
 // ==========================================
 
-function loadPhoto(event){
+async function loadPhoto(event){
 
-const file = event.target.files[0];
+    const file = event.target.files[0];
 
-if(!file) return;
+    if(!file) return;
 
-if(!file.type.startsWith("image/")){
+    if(!file.type.startsWith("image/")){
+        alert("Please select a valid image.");
+        return;
+    }
 
-    alert("Please select an image.");
+    if(file.size > 5 * 1024 * 1024){
+        alert("Image must be smaller than 5MB.");
+        return;
+    }
 
-    return;
+    photoUploading = true;
+    uploadedFanPhotoURL = "";
 
-}
+    const photoPreview = document.getElementById("fanPhoto");
 
-if(file.size > 5*1024*1024){
+    const reader = new FileReader();
 
-    alert("Image must be smaller than 5MB.");
+    reader.onload = () => {
+        photoPreview.src = reader.result;
+    };
 
-    return;
+    reader.readAsDataURL(file);
 
-}
+    try{
 
-const reader = new FileReader();
+        const formData = new FormData();
 
-reader.onload = ()=>{
+        formData.append("file", file);
 
-    document.getElementById("fanPhoto").src = reader.result;
+        formData.append(
+            "upload_preset",
+            CLOUDINARY_UPLOAD_PRESET
+        );
 
-};
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+            {
+                method: "POST",
+                body: formData
+            }
+        );
 
-reader.readAsDataURL(file);
+        const result = await response.json();
+
+        if(!response.ok){
+            throw new Error(result.error?.message || "Photo upload failed.");
+        }
+
+        uploadedFanPhotoURL = result.secure_url;
+
+        photoPreview.src = uploadedFanPhotoURL;
+
+        alert("Fan photograph uploaded successfully!");
+
+        console.log("Cloudinary photo URL:", uploadedFanPhotoURL);
+
+    }catch(error){
+
+        console.error("Cloudinary upload error:", error);
+
+        alert("Photo upload failed: " + error.message);
+
+    }finally{
+
+        photoUploading = false;
+
+    }
 
 }
 
