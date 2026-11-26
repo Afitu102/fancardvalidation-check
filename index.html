@@ -1,12 +1,8 @@
 <!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Official Fan Membership Card Builder</title><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script><!-- Firebase SDK --><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><link rel="stylesheet" href="style.css">
-</head>
-  <body>
-    <div class="container">
-      <h1>FAN MEMBERSHIP CARD BUILDER</h1><p class="subtitle">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Official Fan Membership Card Builder</title><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script><!-- Firebase SDK --><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><link rel="stylesheet" href="style.css">
+</head><body><div class="container"><h1>FAN MEMBERSHIP CARD BUILDER</h1><p class="subtitle">
 Create your personalized celebrity fan membership card.
 </p><!-- ADMIN LOGIN --><div class="form"><div class="section-title">ADMINISTRATOR ACCESS</div><p id="adminStatus" style="font-size:12px;color:#e6c66b;margin-bottom:10px;">
 Not signed in. Administrator login required to register cards.
@@ -27,11 +23,11 @@ LOG OUT
 placeholder="Search celebrity..."
 oninput="renderCelebs()">
 
-<div class="filters">
-<button class="active" onclick="setCategory('All',this)">All</button>
+<div class="filters"><button class="active" onclick="setCategory('All',this)">All</button>
 <button onclick="setCategory('American',this)">American</button>
 <button onclick="setCategory('British',this)">British</button>
 <button onclick="setCategory('International',this)">International</button>
+
 </div><div class="grid" id="celebGrid"></div><!-- COLOUR SELECTION --><div class="form"><div class="section-title">CHOOSE CARD COLOUR</div><div class="theme-grid"><div class="theme-option active"
 onclick="setTheme('#172e59','#d4af37',this)">
 <div class="theme-color" style="background:#172e59"></div>
@@ -70,33 +66,44 @@ onclick="setTheme('#a32663','#ffd1e8',this)">
 <small>Rose Pink</small>
 </div></div><label>Custom Colour</label>
 
-<div class="custom-color">
-<input type="color" id="customColor"
+<div class="custom-color"><input type="color" id="customColor"
 value="#172e59"
 oninput="setCustomTheme(this.value)">
+
 <span style="font-size:11px;color:#bbb">
 Choose your own card colour.
-</span>
-</div></div><!-- EDIT FRONT AND BACK --><div class="form"><div class="section-title">EDIT FRONT CARD</div><label>Fan Name</label>
+</span></div>
+</div><!-- EDIT FRONT AND BACK --><div class="form"><div class="section-title">EDIT FRONT CARD</div><label>Fan Name</label>
 <input id="fanName" value="Sarah James" oninput="update()">
 
 <div class="row"><div>
-<label>Sex</label>
-<select id="sex" onchange="update()">
+<label>Sex</label><select id="sex" onchange="update()">
 <option>Female</option>
 <option>Male</option>
 <option>Other</option>
 </select>
 </div><div>
-<label>Card Type</label>
-<select id="cardType" onchange="update()">
+<label>Card Type</label><select id="cardType" onchange="update()">
 <option>Regular</option>
 <option>VIP</option>
 </select>
 </div></div><label>Country</label>
 <input id="country" value="USA" oninput="update()">
 
-<label>Favorite</label>
+<!-- TELEGRAM USERNAME --><div class="section-title">TELEGRAM CONTACT DETAILS</div><label>Telegram Username (Required)</label>
+
+<input
+type="text"
+id="telegramUsername"
+placeholder="@TaylorManagement"
+autocomplete="off"
+oninput="this.value = this.value.replace(/\s/g,'')"
+
+«»
+
+<small style="display:block;color:#e6c66b;font-size:11px;margin-top:6px;">
+Enter the Telegram username connected to this fan card. This will be used to create the Chat on Telegram button on the verification page.
+</small><label>Favorite</label>
 <input id="fav" value="Favorite Celebrity" oninput="update()">
 
 <label>Upload Fan Photograph</label>
@@ -139,10 +146,11 @@ alt="Fan photograph">
 <p><b>CARD TYPE:</b> <span id="pType"></span></p>
 <p><b>COUNTRY:</b> <span id="pCountry"></span></p>
 <p><b>MEMBER SINCE:</b> <span id="pYear"></span></p>
-<p><b>FAVORITE:</b> <span id="pFav"></span></p></div><div class="celeb-photo">
-<img id="celebLargePhoto"
+<p><b>FAVORITE:</b> <span id="pFav"></span></p></div><div class="celeb-photo"><img id="celebLargePhoto"
 src="https://ui-avatars.com/api/?name=Celebrity"
-alt="Selected celebrity"><small id="celebPhotoName">Celebrity</small>
+alt="Selected celebrity">
+
+<small id="celebPhotoName">Celebrity</small>
 
 </div></div><div class="card-bottom"><div class="sig-box">
 <div class="sig-label">Signature</div>
@@ -163,7 +171,8 @@ OFFICIAL FAN MEMBERSHIP CARD
 <small id="backId"></small>
 </div></div><div class="back-disclaimer" id="backDisclaimer">
 OFFICIAL FAN MEMBERSHIP CARD
-</div></div></div><!-- CARD REGISTRATION --><div class="section-title">REGISTER FAN CARD</div><button class="action" id="saveCardBtn" onclick="saveFanCard()">
+</div></div>
+</div></div><!-- CARD REGISTRATION --><div class="section-title">REGISTER FAN CARD</div><button class="action" id="saveCardBtn" onclick="saveFanCard()">
 SAVE & REGISTER FAN CARD
 </button><p id="saveStatus" class="notice">
 Sign in as administrator before registering a fan card.
@@ -181,15 +190,6 @@ DOWNLOAD BACK CARD
 This card is officially issued and authorised by management .
 It is issued, approved, sponsored or endorsed by the celebrity
 or their representatives. Celebrity names and photographs are used
-for identification purposed </p>
-
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-
-<script src="app.js"></script>
-
-</body>
+for identification purposed
+</p></div><script src="app.js"></script></body>
 </html>
