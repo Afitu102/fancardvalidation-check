@@ -1,8 +1,7 @@
 <!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>Official Fan Membership Card Builder</title><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script><!-- Firebase SDK --><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><link rel="stylesheet" href="style.css">
-</head><body><div class="container"><h1>FAN MEMBERSHIP CARD BUILDER</h1><p class="subtitle">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Official Fan Membership Card Builder</title><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script><!-- Firebase SDK --><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><link rel="stylesheet" href="style.css"></head><body><div class="container"><h1>FAN MEMBERSHIP CARD BUILDER</h1><p class="subtitle">
 Create your personalized celebrity fan membership card.
 </p><!-- ADMIN LOGIN --><div class="form"><div class="section-title">ADMINISTRATOR ACCESS</div><p id="adminStatus" style="font-size:12px;color:#e6c66b;margin-bottom:10px;">
 Not signed in. Administrator login required to register cards.
@@ -19,13 +18,16 @@ onclick="adminLogout()" style="display:none;">
 LOG OUT
 </button>
 
-</div><div class="section-title">SELECT CELEBRITY</div><input class="search" id="search"
+</div><!-- SELECT CELEBRITY --><div class="section-title">SELECT CELEBRITY</div><input class="search" id="search"
 placeholder="Search celebrity..."
 oninput="renderCelebs()">
 
 <div class="filters"><button class="active" onclick="setCategory('All',this)">All</button>
+
 <button onclick="setCategory('American',this)">American</button>
+
 <button onclick="setCategory('British',this)">British</button>
+
 <button onclick="setCategory('International',this)">International</button>
 
 </div><div class="grid" id="celebGrid"></div><!-- COLOUR SELECTION --><div class="form"><div class="section-title">CHOOSE CARD COLOUR</div><div class="theme-grid"><div class="theme-option active"
@@ -72,8 +74,7 @@ oninput="setCustomTheme(this.value)">
 
 <span style="font-size:11px;color:#bbb">
 Choose your own card colour.
-</span></div>
-</div><!-- EDIT FRONT AND BACK --><div class="form"><div class="section-title">EDIT FRONT CARD</div><label>Fan Name</label>
+</span></div></div><!-- EDIT FRONT AND BACK --><div class="form"><div class="section-title">EDIT FRONT CARD</div><label>Fan Name</label>
 <input id="fanName" value="Sarah James" oninput="update()">
 
 <div class="row"><div>
@@ -90,7 +91,9 @@ Choose your own card colour.
 </div></div><label>Country</label>
 <input id="country" value="USA" oninput="update()">
 
-<!-- TELEGRAM USERNAME --><div class="section-title">TELEGRAM CONTACT DETAILS</div><label>Telegram Username (Required)</label>
+<!-- CONTACT PLATFORM SELECTION --><div class="section-title">CONTACT PLATFORM DETAILS</div><label>Choose Message Platform</label>
+
+<select id="contactPlatform" onchange="updateContactFields()"><option value="telegram">Telegram</option><option value="whatsapp">WhatsApp</option></select><!-- TELEGRAM INPUT --><div id="telegramField"><label>Telegram Username (Required)</label>
 
 <input
 type="text"
@@ -102,8 +105,22 @@ oninput="this.value = this.value.replace(/\s/g,'')"
 «»
 
 <small style="display:block;color:#e6c66b;font-size:11px;margin-top:6px;">
-Enter the Telegram username connected to this fan card. This will be used to create the Chat on Telegram button on the verification page.
-</small><label>Favorite</label>
+Enter the Telegram username connected to this fan card.
+</small></div><!-- WHATSAPP INPUT --><div id="whatsappField" style="display:none;"><label>WhatsApp Phone Number (Required)</label>
+
+<input
+type="tel"
+id="whatsappNumber"
+placeholder="2348012345678"
+autocomplete="off"
+inputmode="tel"
+oninput="this.value = this.value.replace(/[^0-9]/g,'')"
+
+«»
+
+<small style="display:block;color:#e6c66b;font-size:11px;margin-top:6px;">
+Enter the WhatsApp number with its international country code. Do not include the + sign or spaces. Example: 2348012345678.
+</small></div><label>Favorite</label>
 <input id="fav" value="Favorite Celebrity" oninput="update()">
 
 <label>Upload Fan Photograph</label>
@@ -111,7 +128,7 @@ Enter the Telegram username connected to this fan card. This will be used to cre
 
 <button class="action secondary" onclick="generateID()">
 GENERATE NEW FAN ID
-</button><div class="section-title">EDIT BACK CARD</div><label>Membership Benefits (one per line)</label>
+</button><!-- EDIT BACK CARD --><div class="section-title">EDIT BACK CARD</div><label>Membership Benefits (one per line)</label>
 
 <textarea id="backBenefits" oninput="update()">Early access to exclusive content
 VIP members receive priority access
@@ -136,17 +153,11 @@ oninput="update()">
 Celebrity Membership Card
 </div><div class="header-subtitle">
 OFFICIAL FAN MEMBERSHIP
-</div></div><div class="front-main"><div class="fan-photo">
-<img id="fanPhoto"
+</div></div><div class="front-main"><div class="fan-photo"><img id="fanPhoto"
 src="https://i.pravatar.cc/400?img=47"
 alt="Fan photograph">
-</div><div class="details"><p><b>FAN NAME:</b> <span id="pName"></span></p>
-<p><b>FAN ID:</b> <span id="pId"></span></p>
-<p><b>SEX:</b> <span id="pSex"></span></p>
-<p><b>CARD TYPE:</b> <span id="pType"></span></p>
-<p><b>COUNTRY:</b> <span id="pCountry"></span></p>
-<p><b>MEMBER SINCE:</b> <span id="pYear"></span></p>
-<p><b>FAVORITE:</b> <span id="pFav"></span></p></div><div class="celeb-photo"><img id="celebLargePhoto"
+
+</div><div class="details"><p><b>FAN NAME:</b> <span id="pName"></span></p><p><b>FAN ID:</b> <span id="pId"></span></p><p><b>SEX:</b> <span id="pSex"></span></p><p><b>CARD TYPE:</b> <span id="pType"></span></p><p><b>COUNTRY:</b> <span id="pCountry"></span></p><p><b>MEMBER SINCE:</b> <span id="pYear"></span></p><p><b>FAVORITE:</b> <span id="pFav"></span></p></div><div class="celeb-photo"><img id="celebLargePhoto"
 src="https://ui-avatars.com/api/?name=Celebrity"
 alt="Selected celebrity">
 
@@ -171,8 +182,7 @@ OFFICIAL FAN MEMBERSHIP CARD
 <small id="backId"></small>
 </div></div><div class="back-disclaimer" id="backDisclaimer">
 OFFICIAL FAN MEMBERSHIP CARD
-</div></div>
-</div></div><!-- CARD REGISTRATION --><div class="section-title">REGISTER FAN CARD</div><button class="action" id="saveCardBtn" onclick="saveFanCard()">
+</div></div></div></div><!-- CARD REGISTRATION --><div class="section-title">REGISTER FAN CARD</div><button class="action" id="saveCardBtn" onclick="saveFanCard()">
 SAVE & REGISTER FAN CARD
 </button><p id="saveStatus" class="notice">
 Sign in as administrator before registering a fan card.
@@ -191,5 +201,31 @@ This card is officially issued and authorised by management .
 It is issued, approved, sponsored or endorsed by the celebrity
 or their representatives. Celebrity names and photographs are used
 for identification purposed
-</p></div><script src="app.js"></script></body>
+</p></div><!-- CONTACT PLATFORM DISPLAY CONTROL --><script>
+
+function updateContactFields(){
+
+    const platform = document.getElementById("contactPlatform").value;
+
+    const telegramField = document.getElementById("telegramField");
+
+    const whatsappField = document.getElementById("whatsappField");
+
+    if(platform === "telegram"){
+
+        telegramField.style.display = "block";
+
+        whatsappField.style.display = "none";
+
+    }else if(platform === "whatsapp"){
+
+        telegramField.style.display = "none";
+
+        whatsappField.style.display = "block";
+
+    }
+
+}
+
+</script><script src="app.js"></script></body>
 </html>
